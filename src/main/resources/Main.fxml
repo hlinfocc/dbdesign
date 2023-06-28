@@ -44,12 +44,6 @@
                         </HBox>
                         <HBox prefHeight="56.0" prefWidth="389.0">
                            <children>
-                              <Label alignment="CENTER_RIGHT" contentDisplay="RIGHT" prefHeight="26.0" prefWidth="117.0" text="数据库名：" textAlignment="RIGHT" />
-                              <TextField fx:id="dbName" onInputMethodTextChanged="#onDatabaseChange" prefHeight="27.0" prefWidth="265.0" promptText="请输入数据库名" />
-                           </children>
-                        </HBox>
-                        <HBox prefHeight="56.0" prefWidth="389.0">
-                           <children>
                               <Label alignment="CENTER_RIGHT" contentDisplay="RIGHT" prefHeight="26.0" prefWidth="117.0" text="用户名：" textAlignment="RIGHT" />
                               <TextField fx:id="dbUserName" prefHeight="27.0" prefWidth="265.0" promptText="请输入数据库用户名" />
                            </children>
@@ -67,6 +61,30 @@
                               <TextField fx:id="dbPasswordShow" onInputMethodTextChanged="#onPwdShowChange" prefHeight="27.0" prefWidth="0" promptText="请输入数据库用户密码" visible="false" />
                            </children>
                         </HBox>
+                        <HBox prefHeight="56.0" prefWidth="389.0">
+                           <children>
+                              <Label alignment="CENTER_RIGHT" contentDisplay="RIGHT" prefHeight="26.0" prefWidth="117.0" text="获取数据库：" textAlignment="RIGHT" />
+                              <Button fx:id="fetchDatabases" alignment="CENTER" mnemonicParsing="false" onAction="#onFetchDatabases" text="立即获取" />
+                              <ChoiceBox fx:id="databasesList" onAction="#onDatabasesChoose" prefHeight="27.0" prefWidth="180.0">
+                                 <cursor>
+                                    <Cursor fx:constant="HAND" />
+                                 </cursor>
+                                 <opaqueInsets>
+                                    <Insets />
+                                 </opaqueInsets>
+                                 <HBox.margin>
+                                    <Insets left="10.0" />
+                                 </HBox.margin>
+                              </ChoiceBox>
+                           </children>
+                        </HBox>
+                        <HBox prefHeight="56.0" prefWidth="389.0">
+                           <children>
+                              <Label alignment="CENTER_RIGHT" contentDisplay="RIGHT" prefHeight="26.0" prefWidth="117.0" text="数据库名：" textAlignment="RIGHT" />
+                              <TextField fx:id="dbName" onInputMethodTextChanged="#onDatabaseChange" prefHeight="27.0" prefWidth="265.0" promptText="请输入数据库名" />
+                           </children>
+                        </HBox>
+                        
                         <HBox prefHeight="60.0" prefWidth="389.0">
                            <children>
                               <Button fx:id="chooserSaveDir" mnemonicParsing="false" onAction="#onChooserSaveDir" prefHeight="27.0" prefWidth="112.0" text="选择保存的位置" />

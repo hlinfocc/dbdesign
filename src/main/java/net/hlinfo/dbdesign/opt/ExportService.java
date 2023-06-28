@@ -130,7 +130,7 @@ public class ExportService {
     	PushMsg.get().appendLabShow("开始生成数据库设计文档...");
     	File fileDir = new File(saveFilePath);
 		FileUtil.mkdir(fileDir);
-		saveFilePath = saveFilePath+File.separatorChar+dbName+"-dbdesign-"+Func.Times.nowDateBasic()+".docx";
+		saveFilePath = saveFilePath+File.separatorChar+dbName+"-dbdesign-"+Func.Times.nowDateBasic()+".doc";
 		String rsPath = this.createDocxByParem(html, saveFilePath);
 		return rsPath;
 	}

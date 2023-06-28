@@ -72,6 +72,10 @@ public class MainController implements Initializable {
     private Button nowCreateDesign;
     @FXML
     private TextArea progressMsg;
+    @FXML
+    private Button fetchDatabases;
+    @FXML
+    private ChoiceBox<String> databasesList;
     
 	
 	@Override
@@ -194,6 +198,48 @@ public class MainController implements Initializable {
 			}
 		}
 	}
+	
+	/**
+	 * 获取数据库
+	 * @param even
+	 */
+	@FXML
+	void onFetchDatabases(ActionEvent even) {
+		PushMsg.get().clean();
+		DbHelper dbHelper = null;
+		try {
+			if(this.validata(true)) {	
+				PushMsg.get().appendLabShow("加载数据库配置...");
+				DbConn.jdbcUrl = this.buildJdbcBaseUrl();
+				DbConn.driverClassName = this.dbDriver.getValue();
+				DbConn.jdbcUserName = this.dbUserName.getText();
+				DbConn.jdbcPasswd = this.dbPassword.getText();
+				dbHelper = new DbHelper();
+				if(dbHelper.isConn()) {
+					PushMsg.get().appendLabShow("连接数据库成功...");
+				}
+				ObservableList<String> dblist = dbHelper.queryDBList();
+				if(dblist!=null && dblist.size()>0) {
+					PushMsg.get().appendLabShow("获取数据库列表成功...");
+					this.databasesList.setItems(dblist);
+				}
+			}
+		}catch (Exception e) {
+			log.error("出错了:{}",e);
+			PushMsg.get().appendLabShow("出错了："+e.getMessage());
+		} finally {
+			if(dbHelper!=null) {
+				dbHelper.destroy();
+			}
+		}
+	}
+	
+	@FXML
+	void onDatabasesChoose(ActionEvent even) {
+		String nowdb = this.databasesList.getValue();
+		this.dbName.setText(nowdb);
+	}
+	
 	/**
 	 * 连接测试
 	 * @param even
@@ -203,7 +249,7 @@ public class MainController implements Initializable {
 		PushMsg.get().clean();
 		DbHelper dbHelper = null;
 		try {
-			if(this.validata()) {			
+			if(this.validata(false)) {			
 				PushMsg.get().appendLabShow("加载数据库配置...");
 				DbConn.jdbcUrl = this.buildJdbcUrl();
 				DbConn.driverClassName = this.dbDriver.getValue();
@@ -255,7 +301,7 @@ public class MainController implements Initializable {
 	void onNowCreateDesign(ActionEvent even) {
 		DbHelper dbHelper = null;
 		try {
-			if(this.validata()) {			
+			if(this.validata(false)) {			
 				PushMsg.get().appendLabShow("创建数据库设计文档...");
 				DbConn.jdbcUrl = this.buildJdbcUrl();
 				DbConn.driverClassName = this.dbDriver.getValue();
@@ -292,9 +338,10 @@ public class MainController implements Initializable {
 	}
 	/**
 	 * 校验
+	 * @param isbase 是否只校验基本信息
 	 * @return
 	 */
-	private boolean validata() {
+	private boolean validata(boolean isbase) {
 		String pattern = "^(6553[0-5]|655[0-2]\\d|65[0-4]\\d{2}|6[0-4]\\d{3}|[0-5]\\d{4}|[1-9]\\d{0,3})$";
 		if(Func.isBlank(serverIp.getText())) {
 			alert(Alert.AlertType.WARNING,"服务器地址不能为空");
@@ -304,7 +351,7 @@ public class MainController implements Initializable {
 			alert(Alert.AlertType.WARNING,"端口号格式不对");
 			return false;
 		}
-		if(Func.isBlank(dbName.getText())) {
+		if(!isbase && Func.isBlank(dbName.getText())) {
 			alert(Alert.AlertType.WARNING,"数据库名不能为空");
 			return false;
 		}
@@ -316,7 +363,7 @@ public class MainController implements Initializable {
 			alert(Alert.AlertType.WARNING,"密码不能为空");
 			return false;
 		}
-		if(Func.isBlank(this.chooserSavePath.getText())) {
+		if(!isbase && Func.isBlank(this.chooserSavePath.getText())) {
 			alert(Alert.AlertType.WARNING,"请选择保存的目录");
 			return false;
 		}
@@ -353,6 +400,26 @@ public class MainController implements Initializable {
 		url = url.replace("${host}", serverIp.getText());
 		url = url.replace("${port}", serverPort.getText());
 		url = url.replace("${dbname}", dbName.getText());
+		return url;
+	}
+	/**
+	 * 组装jdbc URL，不包含数据库
+	 * @return
+	 */
+	private String buildJdbcBaseUrl() {
+		String url = "";
+		if(dbpgsql.isSelected()) {
+			url = "jdbc:postgresql://${host}:${port}/";
+		}
+		if(dbmysql.isSelected()) {
+			if(Func.equals(dbDriver.getValue(), "com.mysql.jdbc.Driver")) {
+				url="jdbc:mysql://${host}:${port}?useUnicode=true&characterEncoding=UTF8&useSSL=false&useInformationSchema=true";
+			}else {
+				url = "jdbc:mysql://${host}:${port}?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=UTF8&useSSL=false&useInformationSchema=true";
+			}
+		}
+		url = url.replace("${host}", serverIp.getText());
+		url = url.replace("${port}", serverPort.getText());
 		return url;
 	}
 	

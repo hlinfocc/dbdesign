@@ -1,5 +1,6 @@
 package net.hlinfo.dbdesign.opt;
 
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -9,6 +10,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import net.hlinfo.opt.Func;
 import net.hlinfo.opt.Jackson;
 
@@ -137,6 +140,29 @@ public class DbHelper {
 	       }
 		}
 		return fieldList;
+	}
+	/**
+	 * 获取数据库列表
+	 * @return
+	 * @throws SQLException
+	 */
+	public ObservableList<String> queryDBList() throws SQLException {
+		ResultSet rs;
+		if(TbCache.databaseType==0) {
+			String pgGetDbSql = "SELECT datname FROM pg_database where datistemplate='f' ORDER BY datname;";
+			CallableStatement cStmt = conn.prepareCall(pgGetDbSql);
+			rs = cStmt.executeQuery();
+		}else {
+			//处理MySQL
+			CallableStatement cStmt = conn.prepareCall("show databases");
+			rs = cStmt.executeQuery();
+		}
+		ObservableList<String> dblist = FXCollections.observableArrayList();
+		while (rs.next()) {			
+	    	String db = rs.getString(1);//表名
+	    	dblist.add(db);
+		}
+		return dblist;
 	}
 	
 }

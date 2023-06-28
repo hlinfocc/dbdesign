@@ -33,7 +33,7 @@ dbdesign是一款轻量级的从数据库导出数据库表设计的桌面软件
 
 > 解压后运行startup.sh
 
-* dbdesign-full-windows.zip带jre环境的windows包（电脑上无需前提安装JDK）
+* dbdesign-full-windows.7z带jre环境的windows包（电脑上无需前提安装JDK）
 
 > 解压后运行startup.bat
 

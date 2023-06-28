@@ -2,25 +2,30 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>net.hlinfo</groupId>
   <artifactId>dbdesign</artifactId>
-  <version>1.0.1</version>
+  <version>1.0.2</version>
   <name>dbdesign</name>
   
   <properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
-		<hlinfo.utils.version>1.0.6</hlinfo.utils.version>
+		<hlinfo.utils.version>1.0.15</hlinfo.utils.version>
 		<poi.version>5.2.2</poi.version>
 		<poi.ooxml.schemas.version>4.1.2</poi.ooxml.schemas.version>
 		<slf4j.version>1.7.36</slf4j.version>
-		<jackson.version>2.13.3</jackson.version>
+		<jackson.version>2.15.2</jackson.version>
 	</properties>
   
   <dependencies>
+  		<dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>4.0.1</version>
+        </dependency>
         <dependency>
 		    <groupId>cn.hutool</groupId>
 		    <artifactId>hutool-all</artifactId>
-		    <version>5.8.3</version>
+		    <version>5.8.20</version>
 		</dependency>
 		<dependency>
             <groupId>net.hlinfo</groupId>
@@ -158,13 +163,14 @@
 			</resource>
 		 
 			<resource>
-				<!--把src/main/resources目录下的properties、xm文件打包打进程序中-->
+				<!--把src/main/resources目录下的properties、xml文件打包打进程序中-->
 				<directory>src/main/resources</directory>
 				<includes>
 					<include>**/*.properties</include>
 					<include>**/*.xml</include>
 					<include>**/*.fxml</include>
 					<include>**/*.html</include>
+					<include>**/*.ttf</include>
 				</includes>
 				<filtering>false</filtering>
 			</resource>
