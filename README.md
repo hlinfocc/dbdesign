@@ -29,7 +29,9 @@ dbdesign是一款轻量级的从数据库导出数据库表设计的桌面软件
 
 > 运行：java -jar dbdesign-1.0.2.jar
 
-* dbdesign-full-linux.zip带jre环境的Linux包（电脑上无需提前安装JDK）
+* dbdesign-full-linux.tar.xz带jre环境的Linux包（电脑上无需提前安装JDK）
+
+> 解压：tar -Jxvf dbdesign-full-linux.tar.xz
 
 > 解压后运行startup.sh
 
