@@ -12,6 +12,9 @@ import java.util.List;
 import org.apache.poi.poifs.filesystem.DirectoryEntry;
 import org.apache.poi.poifs.filesystem.DocumentEntry;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.log.Log;
@@ -170,7 +173,7 @@ public class ExportService {
      * @param list
      * @return
      */
-    public String buildTableInfo(List<TableInfo> list) {
+    public String buildTableInfo(List<TableInfo> list,String tableMatcher) {
     	final String tableTpl = "<tr valign=\"top\">\n"
     			+ "        	<td width=\"134\" style=\"border:1px solid #00000a;padding-top:0;padding-bottom:0;padding-left:.2cm;padding-right:.19cm\">${tableName}"
     			+ "        	</td>\n"
@@ -179,6 +182,24 @@ public class ExportService {
     			+ "        </tr>";
     	StringBuffer sb = new StringBuffer();
     	for(TableInfo tb:list) {
+    		// 处理匹配
+    		if(tableMatcher!=null && !"".equals(tableMatcher)) {
+    			boolean izMatcher = false;
+    			String[] tableMatcherArr = tableMatcher.split("[,，]");
+    			String tableNameStr = tb.getTableName();
+    			for(String s:tableMatcherArr) {
+    				if(s.contains("*")) {
+    					izMatcher = tableNameStr.contains(s.replace("*", ""));
+    					if(izMatcher) {break;}
+    				}else {
+    					izMatcher = tableNameStr.equals(s);
+    					if(izMatcher) {break;}
+    				}
+    			}
+    			if(!izMatcher) {
+    				continue;
+    			}
+    		}
     		String tpl = tableTpl;
     		tpl = tpl.replace("${tableName}", tb.getTableName());
     		tpl = tpl.replace("${tableComment}", tb.getTableComment());
@@ -192,7 +213,7 @@ public class ExportService {
      * @return
      * @throws SQLException 
      */
-    public String buildTableDetail(DbHelper dbHelper) throws SQLException {
+    public String buildTableDetail(DbHelper dbHelper,String tableMatcher) throws SQLException {
     	PushMsg.get().appendLabShow("开始解析表结构信息...");
     	if(TbCache.tblist.isEmpty()) {
     		dbHelper.findTableInfo();
@@ -202,6 +223,24 @@ public class ExportService {
     	StringBuffer sb = new StringBuffer();
     	for(int i=0;i<tbCount;i++) {
     		TableInfo table = TbCache.tblist.get(i);
+    		// 处理匹配
+    		if(tableMatcher!=null && !"".equals(tableMatcher)) {
+    			boolean izMatcher = false;
+    			String[] tableMatcherArr = tableMatcher.split("[,，]");
+    			String tableNameStr = table.getTableName();
+    			for(String s:tableMatcherArr) {
+    				if(s.contains("*")) {
+    					izMatcher = tableNameStr.contains(s.replace("*", ""));
+    					if(izMatcher) {break;}
+    				}else {
+    					izMatcher = tableNameStr.equals(s);
+    					if(izMatcher) {break;}
+    				}
+    			}
+    			if(!izMatcher) {
+    				continue;
+    			}
+    		}
     		PushMsg.get().appendLabShow("解析表"+table.getTableName()+"【"+table.getTableComment()+"】");
     		List<TableFields> fieldList = dbHelper.findTableFields(table.getTableName());
     		log.debug("{}",fieldList);
@@ -229,6 +268,148 @@ public class ExportService {
     	}
     	PushMsg.get().appendLabShow("解析表结构信息结束...OK");
     	return sb.toString();
+    }
+    
+    /**
+     * 导出Excel格式
+     * @return
+     * @throws SQLException 
+     */
+    @SuppressWarnings("resource")
+	public String createExcel(DbHelper dbHelper,String tableMatcher,String saveFilePath,String dbName) throws SQLException {
+    	PushMsg.get().appendLabShow("开始解析表结构信息...");
+    	if(TbCache.tblist.isEmpty()) {
+    		dbHelper.findTableInfo();
+		}
+    	log.debug("{}",TbCache.tblist);
+    	int tbCount = TbCache.tblist.size();
+    	// 1. 创建工作簿
+        Workbook workbook = new XSSFWorkbook();
+        log.debug("++++++++{}",tbCount);
+//    	StringBuffer sb = new StringBuffer();
+    	for(int i=0;i<tbCount;i++) {
+    		System.out.println("table index:"+i);
+    		TableInfo table = TbCache.tblist.get(i);
+    		// 处理匹配
+    		if(tableMatcher!=null && !"".equals(tableMatcher)) {
+    			boolean izMatcher = false;
+    			String[] tableMatcherArr = tableMatcher.split("[,，]");
+    			String tableNameStr = table.getTableName();
+    			for(String s:tableMatcherArr) {
+    				if(s.contains("*")) {
+    					izMatcher = tableNameStr.contains(s.replace("*", ""));
+    					if(izMatcher) {break;}
+    				}else {
+    					izMatcher = tableNameStr.equals(s);
+    					if(izMatcher) {break;}
+    				}
+    			}
+    			if(!izMatcher) {
+    				continue;
+    			}
+    		}
+    		// 2. 创建工作表
+    		String sheetName = table.getTableName();
+    		if(Func.isNotBlank(table.getTableComment())) {
+    			sheetName = table.getTableComment()+"("+table.getTableName()+")";
+    		}
+    		Sheet sheet = workbook.createSheet(sheetName);
+          
+    		PushMsg.get().appendLabShow("解析表"+table.getTableName()+"【"+table.getTableComment()+"】");
+    		List<TableFields> fieldList = dbHelper.findTableFields(table.getTableName());
+    		log.debug("{}",fieldList);
+
+    		// 创建样式 - 边框样式
+			CellStyle commonStyle = workbook.createCellStyle();
+			commonStyle.setBorderTop(BorderStyle.THIN);
+			commonStyle.setBorderBottom(BorderStyle.THIN);
+			commonStyle.setBorderLeft(BorderStyle.THIN);
+			commonStyle.setBorderRight(BorderStyle.THIN);
+			commonStyle.setAlignment(HorizontalAlignment.CENTER);
+			commonStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+			commonStyle.setWrapText(true);
+			// 创建加粗字体
+			Font boldFont = workbook.createFont();
+			boldFont.setBold(true); // 设置加粗
+			
+    		Row tableNameRow = sheet.createRow(0);
+    		Cell tableNameCell = tableNameRow.createCell(0);
+          tableNameCell.setCellValue("表名");
+            // 合并第二到第五个单元格并写入内容
+           Cell mergedCell = tableNameRow.createCell(1); // 创建第二个单元格
+           mergedCell.setCellValue(table.getTableName());
+            // 合并单元格 (起始行, 结束行, 起始列, 结束列)
+          sheet.addMergedRegion(new CellRangeAddress(0,0,1,6));
+    		
+          Row headerRow = sheet.createRow(1);
+          String headTitlestr = "字段名,字段类型,主键,唯一键,非空,默认值,说明";
+          String[] headTitleArr = headTitlestr.split(",");
+          CellStyle headTitleCellXStyle = workbook.createCellStyle();
+          headTitleCellXStyle.cloneStyleFrom(commonStyle);
+          headTitleCellXStyle.setFont(boldFont);
+          for(int x=0;x<headTitleArr.length;x++) {
+			Cell headTitleCellX = headerRow.createCell(x);
+			headTitleCellX.setCellValue(headTitleArr[x]);
+			headTitleCellX.setCellStyle(commonStyle);
+          }
+          
+    		int dataIdx = 2;
+    		for(TableFields tf:fieldList) {
+    			Row dataRow = sheet.createRow(dataIdx);
+    			Cell dataCellX1 = dataRow.createCell(0);
+    			dataCellX1.setCellValue(tf.getFieldName());
+    			Cell dataCellX2 = dataRow.createCell(1);
+    			dataCellX2.setCellValue(tf.getFieldType());
+    			Cell dataCellX3 = dataRow.createCell(2);
+    			dataCellX3.setCellValue(tf.getFieldPK());
+    			Cell dataCellX4 = dataRow.createCell(3);
+    			dataCellX4.setCellValue(tf.getFieldUK());
+    			Cell dataCellX5 = dataRow.createCell(4);
+    			dataCellX5.setCellValue(tf.getNonempty());
+    			Cell dataCellX6 = dataRow.createCell(5);
+    			dataCellX6.setCellValue(tf.getDefaultval()==null?"":tf.getDefaultval());
+    			Cell dataCellX7 = dataRow.createCell(6);
+    			dataCellX7.setCellValue(tf.getFieldComment()==null?"":tf.getFieldComment());
+    			dataCellX1.setCellStyle(commonStyle);
+    			dataCellX2.setCellStyle(commonStyle);
+    			dataCellX3.setCellStyle(commonStyle);
+    			dataCellX4.setCellStyle(commonStyle);
+    			dataCellX5.setCellStyle(commonStyle);
+    			dataCellX6.setCellStyle(commonStyle);
+    			dataCellX7.setCellStyle(commonStyle);
+    			dataIdx++;
+    		}
+    		// 设置合并单元格样式（可选）
+			CellStyle mergedStyle = workbook.createCellStyle();
+			mergedStyle.cloneStyleFrom(commonStyle);
+			mergedStyle.setFillForegroundColor(IndexedColors.LIGHT_YELLOW.getIndex());
+			mergedStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+			mergedCell.setCellStyle(mergedStyle);
+
+            // 设置表名单元格样式（可选）
+			CellStyle tableNameStyle = workbook.createCellStyle();
+			tableNameStyle.cloneStyleFrom(commonStyle);
+			tableNameStyle.setFillForegroundColor(IndexedColors.LIGHT_BLUE.getIndex());
+			tableNameStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+			tableNameCell.setCellStyle(tableNameStyle);
+    		// 自动调整列宽
+          for (int y = 0; y < 7; y++) {
+              sheet.autoSizeColumn(y);
+            }
+    	}
+    	PushMsg.get().appendLabShow("解析表结构信息结束...OK");
+    	// 写入文件
+    	File fileDir = new File(saveFilePath);
+		FileUtil.mkdir(fileDir);
+		saveFilePath = saveFilePath+File.separatorChar+dbName+"-dbdesign-"+Func.Times.nowDateBasic()+".xlsx";
+        try (FileOutputStream outputStream = new FileOutputStream(saveFilePath)) {
+            workbook.write(outputStream);
+            log.debug("Excel生成成功!");
+            PushMsg.get().appendLabShow("导出Excel格式结束...OK");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    	return saveFilePath;
     }
     
 }

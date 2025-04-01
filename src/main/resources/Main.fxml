@@ -84,7 +84,12 @@
                               <TextField fx:id="dbName" onInputMethodTextChanged="#onDatabaseChange" prefHeight="27.0" prefWidth="265.0" promptText="请输入数据库名" />
                            </children>
                         </HBox>
-                        
+                        <HBox prefHeight="56.0" prefWidth="389.0">
+                           <children>
+                              <Label alignment="CENTER_RIGHT" contentDisplay="RIGHT" prefHeight="26.0" prefWidth="117.0" text="表名匹配：" textAlignment="RIGHT" />
+                              <TextField fx:id="tableMatcher" prefHeight="27.0" prefWidth="265.0" promptText="逗号分开或*匹配，如：sys_*,*_tb" />
+                           </children>
+                        </HBox>
                         <HBox prefHeight="60.0" prefWidth="389.0">
                            <children>
                               <Button fx:id="chooserSaveDir" mnemonicParsing="false" onAction="#onChooserSaveDir" prefHeight="27.0" prefWidth="112.0" text="选择保存的位置" />
@@ -98,6 +103,17 @@
                                  <cursor>
                                     <Cursor fx:constant="HAND" />
                                  </cursor></ChoiceBox>
+                           </children>
+                        </HBox>
+                        <HBox prefHeight="44.0" prefWidth="389.0">
+                           <children>
+                              <Label alignment="CENTER_RIGHT" prefHeight="17.0" prefWidth="118.0" text="导出类型：" />
+                            	<RadioButton fx:id="word" mnemonicParsing="false" prefHeight="18.0" prefWidth="115.0" selected="true" text="Word" textAlignment="CENTER">
+                                 <toggleGroup>
+                                    <ToggleGroup fx:id="exportType" />
+                                 </toggleGroup>
+                               </RadioButton>
+                            	<RadioButton fx:id="excel" mnemonicParsing="false" text="Excel" textAlignment="CENTER" toggleGroup="$exportType" />
                            </children>
                         </HBox>
                         <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">

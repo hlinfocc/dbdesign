@@ -76,6 +76,14 @@ public class MainController implements Initializable {
     private Button fetchDatabases;
     @FXML
     private ChoiceBox<String> databasesList;
+    @FXML
+    private TextField tableMatcher;
+    @FXML
+	private ToggleGroup exportType;
+    @FXML
+	private RadioButton word;
+	@FXML
+	private RadioButton excel;
     
 	
 	@Override
@@ -319,13 +327,19 @@ public class MainController implements Initializable {
 					this.alert(Alert.AlertType.ERROR, "选择的目录没有可写的权限");
 				}else {
 					ExportService es = new ExportService();
-					html = html.replace("${tableListInfo}", es.buildTableInfo(TbCache.tblist));
-					//构建表结构信息
-					String tableFieldDetail = es.buildTableDetail(dbHelper);
-					html = html.replace("${tableFieldDetailInfo}", tableFieldDetail);
-					String filePath = es.createDocx(html, saveFilePath,TbCache.databaseName);
-					PushMsg.get().appendLabShow("数据库设计文档创建成功...");
-					PushMsg.get().appendLabShow("文件保存于："+filePath);
+					if(word.isSelected()) {
+						html = html.replace("${tableListInfo}", es.buildTableInfo(TbCache.tblist,tableMatcher.getText()));
+						//构建表结构信息
+						String tableFieldDetail = es.buildTableDetail(dbHelper,this.tableMatcher.getText());
+						html = html.replace("${tableFieldDetailInfo}", tableFieldDetail);
+						String filePath = es.createDocx(html, saveFilePath,TbCache.databaseName);
+						PushMsg.get().appendLabShow("数据库设计文档创建成功...");
+						PushMsg.get().appendLabShow("文件保存于："+filePath);
+					}else if(excel.isSelected()) {
+						String filePath = es.createExcel(dbHelper, this.tableMatcher.getText(), saveFilePath, TbCache.databaseName);
+						PushMsg.get().appendLabShow("数据库设计文档创建成功...");
+						PushMsg.get().appendLabShow("文件保存于："+filePath);
+					}
 				}
 			}
 		} catch (Exception e) {
